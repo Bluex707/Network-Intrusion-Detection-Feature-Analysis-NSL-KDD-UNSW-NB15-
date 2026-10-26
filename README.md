@@ -1,5 +1,3 @@
-# Network-Intrusion-Detection-Feature-Analysis-NSL-KDD-UNSW-NB15-
-
 # NSL-KDD vs UNSW-NB15: Feature Selection for Network Intrusion Detection
 
 A side-by-side comparison of two intrusion-detection benchmarks. For each one the same pipeline is run: preprocessing, four feature-selection strategies, and three classifiers. The question is whether feature selection helps, and whether the answer depends on the dataset.
