@@ -13,7 +13,7 @@ raw CSV/TXT ─► clean ─► encode + scale ─► feature selection ─► c
                │          │                 ├─ Wrapper: RFECV
                │          │                 └─ Wrapper: SFS (15)
                │          └─ one-hot (categoricals), MinMaxScaler
-               └─ drop duplicates / constant cols / high-missing cols
+               └─ drop duplicates and redundant / ID columns
 ```
 
 ## Datasets
@@ -25,14 +25,15 @@ raw CSV/TXT ─► clean ─► encode + scale ─► feature selection ─► c
 | Target | 5 groups: Normal, DoS, Probe, R2L, U2R | 10 classes: Normal + 9 attack categories |
 | Source | Canadian Institute for Cybersecurity | UNSW Canberra Cyber Range Lab |
 
-Raw data is not committed. See [`data/README.md`](data/README.md) for download links and where to place the files.
+Raw data is not committed. 
 
 ## Method notes
 
 - **Filter:** mutual information ranking, then drop one of each feature pair with Pearson |r| > 0.90, then keep the top 30.
 - **Wrapper 1, RFECV:** Random Forest estimator, 3-fold stratified CV, weighted F1.
 - **Wrapper 2, SFS:** forward selection down to 15 features.
-- **Variance threshold and chi-squared** were tried and deliberately not used. Low-variance features can be the rare, high-impact attack signals, and chi-squared fits poorly on mostly continuous data. See the notebooks for the reasoning.
+- **Why mutual information:** attacks rarely follow straight-line patterns, and MI can pick up non-linear relationships that a linear correlation score would miss.
+- **UNSW-NB15 `service`:** the `-` placeholder (no service recorded) is kept as its own category, and `service` is one-hot encoded with `proto` and `state`.
 - **Tuning:** `GridSearchCV` (5-fold stratified, weighted F1) for XGBoost and Random Forest, and a `C` sweep for the Linear SVM.
 - Metrics: accuracy, weighted F1 and macro F1. Macro F1 matters most here because the rare classes (R2L, U2R, Worms, Shellcode) are the ones that count in security.
 
@@ -79,7 +80,6 @@ Default-hyperparameter runs, evaluated on each dataset's official test split.
 ```
 ├── README.md
 ├── requirements.txt
-├── data/README.md                 # download instructions only
 ├── notebooks/
 │   ├── 01_nsl_kdd.ipynb           # NSL-KDD preprocessing, selection, models
 │   └── 02_unsw_nb15.ipynb         # UNSW-NB15 preprocessing, selection, models
@@ -90,11 +90,11 @@ Default-hyperparameter runs, evaluated on each dataset's official test split.
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-# download the datasets into data/ (see data/README.md), then:
+# download the datasets into data/ , then:
 jupyter lab
 ```
 
-RFECV and SFS are slow. 
+RFECV and SFS are slow. Expect several minutes per dataset, and more on UNSW-NB15.
 
 ## References
 
